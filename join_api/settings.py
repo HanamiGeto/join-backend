@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-&k^^1*o@#2k-r9ecvhwzt^h+!_dz29qf#z--8_!gbc+qt5vw2k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['Hanami.pythonanywhere.com']
+ALLOWED_HOSTS = [
+    'Hanami.pythonanywhere.com',
+    'localhost',
+    '127.0.0.1'
+    ]
 
 
 # Application definition

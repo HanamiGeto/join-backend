@@ -6,11 +6,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 
 # Create your models here.
-# ASSIGNED_CONTACTS
 URGENCY = (('low', 'Low'),
            ('med', 'Medium'),
            ('high', 'High'))
 
+# creates a list with all the registered user
 USERS_CHOICES = [(user.id, user.username) for user in User.objects.all()]
 
 class Contact(models.Model):
@@ -21,6 +21,16 @@ class Contact(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=100)
     color = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return f'{self.name}'
+    
+class Subtask(models.Model):
+    checked = models.BooleanField(default=False)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.name}'
 
 class Task(models.Model):
     title = models.CharField(max_length=100)
@@ -31,7 +41,10 @@ class Task(models.Model):
         null=True,
     )
     created_at = models.DateField(default=datetime.date.today)
-    assigned_contacts = MultiSelectField(choices=USERS_CHOICES, blank=True, max_length=300)
+    assigned_contacts = MultiSelectField(
+        choices=USERS_CHOICES,
+        blank=True,
+        max_length=300)
     due_date = models.DateField(default=None)
     category = models.ForeignKey(
         Category,
@@ -39,4 +52,10 @@ class Task(models.Model):
     )
     urgency = models.CharField(max_length=6, choices=URGENCY)
     description = models.CharField(max_length=300)
-    subtask = models.CharField(max_length=100, blank=True)
+    # subtask = models.CharField(max_length=100, blank=True)
+    subtask = models.ForeignKey(
+        Subtask,
+        on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return f'{self.id} {self.title}'

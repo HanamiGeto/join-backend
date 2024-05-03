@@ -53,8 +53,8 @@ class TaskSerializer(serializers.ModelSerializer):
             contact_instance, _ = Contact.objects.get_or_create(**contact_data)
             task.assigned_to.add(contact_instance)
 
-        for subtask in subtasks_data:
-            subtask_instance, _ = Subtask.objects.get_or_create(**subtask)
+        for subtask_data in subtasks_data:
+            subtask_instance, _ = Subtask.objects.get_or_create(**subtask_data)
             task.subtasks.add(subtask_instance)
 
         return task

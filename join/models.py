@@ -1,9 +1,6 @@
 import datetime
 from django.conf import settings
 from django.db import models
-from multiselectfield import MultiSelectField
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 
 
 class Contact(models.Model):
@@ -78,7 +75,8 @@ class Subtask(models.Model):
     task = models.ForeignKey(
         Task, 
         on_delete=models.CASCADE, 
-        related_name='subtasks'
+        related_name='subtasks',
+        null=True
     )
 
     def __str__(self):

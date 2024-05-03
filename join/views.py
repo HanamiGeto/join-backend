@@ -4,11 +4,11 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets, permissions, status
-from join.models import Task
-from join.serializers import TaskSerializer, UserSerializer, GroupSerializer
+from join.authentications import EmailAuthentication
+from join.models import Category, Contact, Subtask, Task
+from join.serializers import ContactSerializer, EmailLoginSerializer, SubtaskSerializer, TaskSerializer, CategorySerializer, RegistrationSerializer, UserSerializer, GroupSerializer
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 
 
 
@@ -19,7 +19,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -28,9 +28,12 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class LoginView(ObtainAuthToken):
+    authentication_classes = [EmailAuthentication]
+    serializer_class = EmailLoginSerializer
+
     def post(self, request):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
@@ -42,26 +45,36 @@ class LoginView(ObtainAuthToken):
             'user_id': user.pk,
             'email': user.email
         })
+    
+class RegistrationView(APIView):
+
+    def post(self, request, format=None):
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TaskList(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get(self, request, format=None):
-        tasks = Task.objects.filter(author=request.user)
+        tasks = Task.objects.all()
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
     
     def post(self, request, format=None):
         serializer = TaskSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(author=request.user)
             return Response(serializer.data)
         return Response(serializer.errors)
     
 class TaskDetail(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get(self, request, pk, format=None):
         tasks = Task.objects.filter(pk=pk)
@@ -74,8 +87,80 @@ class TaskDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
     def patch(self, request, pk, format=None):
-        task = Task.objects.filter(pk=pk)
+        task = Task.objects.get(pk=pk)
         serializer = TaskSerializer(task, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+    
+class CategoryList(APIView):
+    
+    def get(self, request, format=None):
+        category = Category.objects.all()
+        serializer = CategorySerializer(category, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, format=None):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+    
+class CategoryDetail(APIView):
+    
+    def get(self, request, pk, format=None):
+        category = Category.objects.filter(pk=pk)
+        serializer = CategorySerializer(category, many=True)
+        return Response(serializer.data)
+    
+
+class SubtaskList(APIView):
+    
+    def get(self, request, format=None):
+        subtask = Subtask.objects.all()
+        serializer = SubtaskSerializer(subtask, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, format=None):
+        serializer = SubtaskSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+    
+class SubtaskDetail(APIView):
+    
+    def get(self, request, pk, format=None):
+        subtask = Subtask.objects.filter(pk=pk)
+        serializer = SubtaskSerializer(subtask, many=True)
+        return Response(serializer.data)
+    
+class ContactList(APIView):
+    
+    def get(self, request, format=None):
+        contact = Contact.objects.all()
+        serializer = ContactSerializer(contact, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, format=None):
+        serializer = ContactSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+    
+class ContactDetail(APIView):
+    
+    def get(self, request, pk, format=None):
+        contact = Contact.objects.filter(pk=pk)
+        serializer = ContactSerializer(contact, many=True)
+        return Response(serializer.data)
+    
+    def patch(self, request, pk, format=None):
+        contact = Contact.objects.get(pk=pk)
+        serializer = ContactSerializer(contact, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

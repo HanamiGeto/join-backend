@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from join.views import LoginView, TaskList, TaskDetail
+from join.views import CategoryDetail, CategoryList, ContactDetail, ContactList, LoginView, SubtaskDetail, SubtaskList, TaskList, TaskDetail, RegistrationView
 from rest_framework import routers
 from join import views
 
@@ -27,7 +27,14 @@ urlpatterns = [
     path('', include(router.urls)),
     path('admin/', admin.site.urls),
     path('login/', LoginView.as_view()),
+    path('register/', RegistrationView.as_view()),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('tasks', TaskList.as_view()),
-    path('tasks<int:pk>', TaskDetail.as_view()),
+    path('tasks/', TaskList.as_view()),
+    path('tasks/<int:pk>/', TaskDetail.as_view()),
+    path('category/', CategoryList.as_view()),
+    path('category/<int:pk>/', CategoryDetail.as_view()),
+    path('subtask/', SubtaskList.as_view()),
+    path('subtask/<int:pk>/', SubtaskDetail.as_view()),
+    path('contact/', ContactList.as_view()),
+    path('contact/<int:pk>/', ContactDetail.as_view()),
 ]

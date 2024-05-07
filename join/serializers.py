@@ -86,14 +86,11 @@ class TaskSerializer(serializers.ModelSerializer):
             for subtask_data in subtasks_data:
                 title = subtask_data.get('title')
                 if title:
-                    try:
-                        subtask_instance = Subtask.objects.get(task=instance, title=title)
-                        subtask_instance.done = subtask_data.get('done', subtask_instance.done)
-                        subtask_instance.save()
-                    except Subtask.DoesNotExist:
-                        print('Subtask mit Titel "{}" wurde nicht gefunden.'.format(title))
+                    subtask_instance, created_subtask = Subtask.objects.get_or_create(task=instance, title=title)
+                    subtask_instance.done = subtask_data.get('done', subtask_instance.done)
+                    subtask_instance.save()
                 else:
-                    print('Subtask-Titel nicht angegeben.')
+                    raise serializers.ValidationError("Unable to find subtask title.")
 
         instance.save()
 

@@ -69,8 +69,8 @@ class TaskList(APIView):
         serializer = TaskSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author=request.user)
-            return Response(serializer.data)
-        return Response(serializer.errors)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class TaskDetail(APIView):
     authentication_classes = [TokenAuthentication]
@@ -92,7 +92,7 @@ class TaskDetail(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class CategoryList(APIView):
     
@@ -105,8 +105,8 @@ class CategoryList(APIView):
         serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class CategoryDetail(APIView):
     
@@ -127,8 +127,8 @@ class SubtaskList(APIView):
         serializer = SubtaskSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class SubtaskDetail(APIView):
     
@@ -148,10 +148,12 @@ class ContactList(APIView):
         serializer = ContactSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ContactDetail(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get(self, request, pk, format=None):
         contact = Contact.objects.filter(pk=pk)
@@ -164,4 +166,9 @@ class ContactDetail(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk):
+        contact = Contact.objects.filter(pk=pk)
+        contact.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
